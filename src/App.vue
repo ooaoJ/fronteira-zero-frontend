@@ -18,6 +18,6 @@ function goToLoading() {
   // simula carregamento (no futuro: esperar resposta da API)
   setTimeout(() => {
     screen.value = 'game'
-  }, 10000000000)
+  }, 10000)
 }
 </script>
