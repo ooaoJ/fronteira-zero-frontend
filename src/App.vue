@@ -1,30 +1,23 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
-  <HelloWorld msg="Vite + Vue" />
+  <Login v-if="screen === 'login'" @login="goToLoading" />
+  <Loading v-else-if="screen === 'loading'" />
+  <Game v-else />
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+<script setup>
+import { ref } from 'vue'
+import Login from './screens/Login.vue'
+import Loading from './screens/Loading.vue'
+import Game from './screens/Game.vue'
+
+const screen = ref('login')
+
+function goToLoading() {
+  screen.value = 'loading'
+
+  // simula carregamento (no futuro: esperar resposta da API)
+  setTimeout(() => {
+    screen.value = 'game'
+  }, 10000000000)
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
+</script>
