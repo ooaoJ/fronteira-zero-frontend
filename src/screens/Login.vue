@@ -147,7 +147,7 @@ function onAudioError(name, e) {
     ></audio>
 
     <div class="metal-panel">
-      <img src="../assets/logo.png" alt="Fronteira Zero" class="logo" />
+      <img src="../assets/images/logo.png" alt="Fronteira Zero" class="logo" />
 
       <div class="panel-content">
         <p class="message">Sobreviva. Cresça. Faça barulho.</p>
@@ -185,7 +185,7 @@ function onAudioError(name, e) {
   width: 100vw;
   height: 100vh;
 
-  background-image: url('../assets/capa.png');
+  background-image: url('../assets/images/capa.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -210,7 +210,7 @@ function onAudioError(name, e) {
   width: min(1080px, 92vw);
   aspect-ratio: 980 / 520;
 
-  background-image: url('../assets/login-container.png');
+  background-image: url('../assets/images/login-container.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -289,7 +289,7 @@ input:focus {
 
   background-color: #b85e1a;
   background-image:
-    url('../assets/texture/black-felt.png'),
+    url('../assets/images/texture/black-felt.png'),
     linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(0, 0, 0, 0.35));
   background-size: cover, 100% 100%;
   background-position: center, center;
