@@ -1,20 +1,23 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick  } from 'vue';
 
-import loginTheme from '../assets/audio/login-theme.mp3'
-import clickSfxFile from '../assets/audio/effect/click.wav'
-import keyboardSfxFile from '../assets/audio/effect/keyboard.wav'
+import loginTheme from '../assets/audio/login-theme.mp3';
+import clickSfxFile from '../assets/audio/effect/click.wav';
+import keyboardSfxFile from '../assets/audio/effect/keyboard.wav';
 
-const email = ref('')
-const password = ref('')
+import { loginRequest } from '../services/auth';
 
-const bgMusic = ref(null)
-const sfxClick = ref(null)
-const sfxKeyboard = ref(null)
+const email = ref('');
+const password = ref('');
 
-const emit = defineEmits(['login'])
+const bgMusic = ref(null);
+const sfxClick = ref(null);
+const sfxKeyboard = ref(null);
 
-let audioUnlocked = false
+const emit = defineEmits(['login']);
+
+let audioUnlocked = false;
+const loading = ref(false);
 
 function playMusic() {
   if (!bgMusic.value) return
@@ -24,10 +27,6 @@ function playMusic() {
   })
 }
 
-/**
- * Desbloqueia SOMENTE os SFX.
- * Não faz play/pause no bgMusic pra evitar parar no primeiro clique.
- */
 function unlockAudio() {
   if (audioUnlocked) return
   audioUnlocked = true
@@ -56,7 +55,8 @@ function ensureMusic() {
   playMusic()
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await nextTick()
   playMusic()
 })
 
@@ -81,9 +81,9 @@ function onType(e) {
   unlockAudio()
 
   const ignore = [
-    'Shift','Control','Alt','Meta','Tab','CapsLock',
-    'ArrowUp','ArrowDown','ArrowLeft','ArrowRight',
-    'Enter','Escape'
+    'Shift', 'Control', 'Alt', 'Meta', 'Tab', 'CapsLock',
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    'Enter', 'Escape'
   ]
   if (ignore.includes(e.key)) return
 
@@ -101,7 +101,7 @@ function onType(e) {
   }
 }
 
-function login() {
+async function login() {
   playClick()
 
   if (!email.value || !password.value) {
@@ -109,13 +109,42 @@ function login() {
     return
   }
 
-  if (bgMusic.value) bgMusic.value.pause()
-  emit('login')
+  if (loading.value) return
+  loading.value = true
+
+  try {
+    const res = await loginRequest(email.value, password.value)
+
+    const token = res?.accessToken?.accessToken
+
+    if (!token) {
+      throw new Error('Token não veio na resposta do backend.')
+    }
+
+    localStorage.setItem('fz_token', token)
+
+    if (bgMusic.value) bgMusic.value.pause()
+
+    emit('login')
+  } catch (err) {
+    const status = err?.response?.status
+    const backendMsg = err?.response?.data?.message
+
+    const msg =
+      (Array.isArray(backendMsg) ? backendMsg.join(' / ') : backendMsg) ||
+      (status === 401 ? 'Email ou senha inválidos' : 'Erro ao conectar no servidor')
+
+    console.log('Erro no login:', err)
+    alert(msg)
+  } finally {
+    loading.value = false
+  }
 }
 
 function onAudioError(name, e) {
   console.log(`Erro carregando áudio: ${name}`, e)
 }
+
 </script>
 
 <template>
