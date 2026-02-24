@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick  } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 
 import loginTheme from '../assets/audio/login-theme.mp3';
 import clickSfxFile from '../assets/audio/effect/click.wav';
@@ -14,7 +14,7 @@ const bgMusic = ref(null);
 const sfxClick = ref(null);
 const sfxKeyboard = ref(null);
 
-const emit = defineEmits(['login']);
+const emit = defineEmits(['login', 'goRegister'])
 
 let audioUnlocked = false;
 const loading = ref(false);
@@ -46,7 +46,7 @@ function unlockAudio() {
         .catch(() => {
           a.muted = false
         })
-    } catch {}
+    } catch { }
   })
 }
 
@@ -152,28 +152,13 @@ function onAudioError(name, e) {
     <div class="overlay"></div>
 
     <!-- 🎵 Música -->
-    <audio
-      ref="bgMusic"
-      :src="loginTheme"
-      loop
-      preload="auto"
-      @error="(e) => onAudioError('loginTheme', e)"
-    ></audio>
+    <audio ref="bgMusic" :src="loginTheme" loop preload="auto" @error="(e) => onAudioError('loginTheme', e)"></audio>
 
     <!-- 🔊 SFX -->
-    <audio
-      ref="sfxClick"
-      :src="clickSfxFile"
-      preload="auto"
-      @error="(e) => onAudioError('click.wav', e)"
-    ></audio>
+    <audio ref="sfxClick" :src="clickSfxFile" preload="auto" @error="(e) => onAudioError('click.wav', e)"></audio>
 
-    <audio
-      ref="sfxKeyboard"
-      :src="keyboardSfxFile"
-      preload="auto"
-      @error="(e) => onAudioError('keyboard.wav', e)"
-    ></audio>
+    <audio ref="sfxKeyboard" :src="keyboardSfxFile" preload="auto"
+      @error="(e) => onAudioError('keyboard.wav', e)"></audio>
 
     <div class="metal-panel">
       <img src="../assets/images/logo.png" alt="Fronteira Zero" class="logo" />
@@ -183,27 +168,17 @@ function onAudioError(name, e) {
 
         <div class="form">
           <div class="fields">
-            <input
-              v-model="email"
-              placeholder="Email"
-              @keydown="onType"
-              @pointerdown="playClick"
-              @focus="playClick"
-            />
-            <input
-              v-model="password"
-              type="password"
-              placeholder="Senha"
-              @keydown="onType"
-              @pointerdown="playClick"
-              @focus="playClick"
-            />
+            <input v-model="email" placeholder="Email" @keydown="onType" @pointerdown="playClick" @focus="playClick" />
+            <input v-model="password" type="password" placeholder="Senha" @keydown="onType" @pointerdown="playClick"
+              @focus="playClick" />
           </div>
 
           <button class="btn-rust" @pointerdown="login">ENTRAR</button>
         </div>
 
-        <p class="message">Novo por aqui? Cadastro em breve.</p>
+        <button class="link-btn" type="button" @pointerdown="() => { playClick(); emit('goRegister') }">
+          Não possui uma conta? Cadastre-se
+        </button>
       </div>
     </div>
   </div>
@@ -360,5 +335,15 @@ input:focus {
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
   pointer-events: none;
+}
+.link-btn {
+  margin-top: 8px;
+  background: transparent;
+  border: none;
+  color: #fde6c3;
+  opacity: 0.9;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: underline;
 }
 </style>

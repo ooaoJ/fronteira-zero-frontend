@@ -5,12 +5,11 @@ import loginTheme from '../assets/audio/login-theme.mp3'
 import clickSfxFile from '../assets/audio/effect/click.wav'
 import keyboardSfxFile from '../assets/audio/effect/keyboard.wav'
 
-import { registerRequest } from '../services/auth' // você vai criar
+import { registerRequest } from '../services/auth'
 
 const name = ref('')
 const email = ref('')
 const password = ref('')
-const confirmPassword = ref('')
 
 const bgMusic = ref(null)
 const sfxClick = ref(null)
@@ -25,9 +24,7 @@ const errorMsg = ref('')
 function playMusic() {
   if (!bgMusic.value) return
   bgMusic.value.volume = 0.4
-  bgMusic.value.play().catch(() => {
-    console.log('Autoplay bloqueado até interação do usuário.')
-  })
+  bgMusic.value.play().catch(() => console.log('Autoplay bloqueado até interação do usuário.'))
 }
 
 function unlockAudio() {
@@ -82,11 +79,7 @@ let lastTypeAt = 0
 function onType(e) {
   unlockAudio()
 
-  const ignore = [
-    'Shift', 'Control', 'Alt', 'Meta', 'Tab', 'CapsLock',
-    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-    'Enter', 'Escape'
-  ]
+  const ignore = ['Shift','Control','Alt','Meta','Tab','CapsLock','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','Escape']
   if (ignore.includes(e.key)) return
 
   const now = Date.now()
@@ -108,16 +101,12 @@ function setError(msg) {
 }
 
 function validate() {
-  if (!name.value || !email.value || !password.value || !confirmPassword.value) {
+  if (!name.value || !email.value || !password.value) {
     setError('Preencha todos os campos.')
     return false
   }
   if (password.value.length < 6) {
     setError('A senha precisa ter pelo menos 6 caracteres.')
-    return false
-  }
-  if (password.value !== confirmPassword.value) {
-    setError('As senhas não coincidem.')
     return false
   }
   setError('')
@@ -127,30 +116,24 @@ function validate() {
 async function register() {
   playClick()
   if (loading.value) return
-
   if (!validate()) return
 
   loading.value = true
   try {
-    // ajuste o payload conforme seu backend
     const res = await registerRequest({
       name: name.value,
       email: email.value,
       password: password.value,
     })
 
-    // se o backend já retornar token no registro, você pode salvar aqui:
     const token = res?.accessToken?.accessToken
     if (token) localStorage.setItem('fz_token', token)
 
     if (bgMusic.value) bgMusic.value.pause()
-
-    // você decide: ir pro login ou já logar
     emit('registered', res)
   } catch (err) {
     const status = err?.response?.status
     const backendMsg = err?.response?.data?.message
-
     const msg =
       (Array.isArray(backendMsg) ? backendMsg.join(' / ') : backendMsg) ||
       (status === 409 ? 'Esse email já está em uso.' : 'Erro ao conectar no servidor')
@@ -171,29 +154,9 @@ function onAudioError(name, e) {
   <div class="login-bg" @pointerdown="ensureMusic">
     <div class="overlay"></div>
 
-    <!-- 🎵 Música -->
-    <audio
-      ref="bgMusic"
-      :src="loginTheme"
-      loop
-      preload="auto"
-      @error="(e) => onAudioError('loginTheme', e)"
-    ></audio>
-
-    <!-- 🔊 SFX -->
-    <audio
-      ref="sfxClick"
-      :src="clickSfxFile"
-      preload="auto"
-      @error="(e) => onAudioError('click.wav', e)"
-    ></audio>
-
-    <audio
-      ref="sfxKeyboard"
-      :src="keyboardSfxFile"
-      preload="auto"
-      @error="(e) => onAudioError('keyboard.wav', e)"
-    ></audio>
+    <audio ref="bgMusic" :src="loginTheme" loop preload="auto" @error="(e) => onAudioError('loginTheme', e)"></audio>
+    <audio ref="sfxClick" :src="clickSfxFile" preload="auto" @error="(e) => onAudioError('click.wav', e)"></audio>
+    <audio ref="sfxKeyboard" :src="keyboardSfxFile" preload="auto" @error="(e) => onAudioError('keyboard.wav', e)"></audio>
 
     <div class="metal-panel">
       <img src="../assets/images/logo.png" alt="Fronteira Zero" class="logo" />
@@ -211,6 +174,7 @@ function onAudioError(name, e) {
               @pointerdown="playClick"
               @focus="playClick"
             />
+
             <input
               v-model="email"
               placeholder="Email"
@@ -219,7 +183,9 @@ function onAudioError(name, e) {
               @pointerdown="playClick"
               @focus="playClick"
             />
+
             <input
+              class="full"
               v-model="password"
               type="password"
               placeholder="Senha"
@@ -227,15 +193,7 @@ function onAudioError(name, e) {
               @keydown="onType"
               @pointerdown="playClick"
               @focus="playClick"
-            />
-            <input
-              v-model="confirmPassword"
-              type="password"
-              placeholder="Confirmar senha"
-              autocomplete="new-password"
-              @keydown="onType"
-              @pointerdown="playClick"
-              @focus="playClick"
+              style="width: 96.6%;"
             />
           </div>
 
@@ -249,28 +207,22 @@ function onAudioError(name, e) {
             Já tenho conta — voltar pro login
           </button>
         </div>
-
-        <p class="message small">Ao se registrar, você aceita sobreviver com as consequências do barulho.</p>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* ✅ Mantido igual ao login (mesmo design) */
 .login-bg {
   width: 100vw;
   height: 100vh;
-
   background-image: url('../assets/images/capa.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   position: relative;
 }
 
@@ -283,10 +235,8 @@ function onAudioError(name, e) {
 .metal-panel {
   position: relative;
   z-index: 2;
-
   width: min(1080px, 92vw);
   aspect-ratio: 980 / 520;
-
   background-image: url('../assets/images/login-container.png');
   background-size: contain;
   background-repeat: no-repeat;
@@ -305,27 +255,17 @@ function onAudioError(name, e) {
 .panel-content {
   position: absolute;
   left: 50%;
-  top: 56%;
+  top: 54%;
   transform: translate(-50%, -50%);
   width: min(780px, 75%);
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
-.message {
-  color: #fde6c3;
-}
-.message:nth-child(1) {
-  font-size: 20px;
-}
-.message.small {
-  font-size: 14px;
-  opacity: 0.9;
-  margin-top: 8px;
-}
+.message { color: #fde6c3; }
+.message:nth-child(1) { font-size: 20px; }
 
 .form {
   width: 100%;
@@ -335,40 +275,35 @@ function onAudioError(name, e) {
 }
 
 .fields {
-  width: 60%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+  width: min(680px, 70%);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 input {
-  width: 100%;
-  height: 44px;
-  padding: 0 14px;
+  width: 93%;
+  height: 40px;
+  padding: 0 12px;
   border-radius: 8px;
-
   border: 1px solid rgba(250, 230, 185, 0.36);
   background: rgba(0, 0, 0, 0.55);
   color: white;
   font-size: 16px;
-
   outline: none;
 }
 
-input:focus {
-  border-color: #c46a22;
+input:focus { border-color: #c46a22; }
+
+.full {
+  grid-column: 1 / -1;
 }
 
-/* ✅ Botão igual */
 .btn-rust {
   width: 38%;
   height: 54px;
-  margin-top: 14px;
-
+  margin-top: 12px;
   position: relative;
-
   background-color: #b85e1a;
   background-image:
     url('../assets/images/texture/black-felt.png'),
@@ -376,28 +311,21 @@ input:focus {
   background-size: cover, 100% 100%;
   background-position: center, center;
   background-repeat: no-repeat, no-repeat;
-
   border: 2px solid rgba(10, 10, 10, 0.9);
   box-shadow:
     0 10px 18px rgba(0, 0, 0, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
     inset 0 -2px 0 rgba(0, 0, 0, 0.45);
-
   color: rgba(255, 235, 215, 0.9);
   font-weight: 500;
   font-size: 20px;
   letter-spacing: 1px;
   text-transform: uppercase;
-
   cursor: pointer;
   transition: transform 0.12s ease, filter 0.12s ease;
 }
 
-.btn-rust:hover {
-  filter: brightness(1.08) contrast(1.05);
-  transform: translateY(-1px);
-}
-
+.btn-rust:hover { filter: brightness(1.08) contrast(1.05); transform: translateY(-1px); }
 .btn-rust:active {
   transform: translateY(1px);
   box-shadow:
@@ -405,7 +333,6 @@ input:focus {
     inset 0 1px 0 rgba(255, 255, 255, 0.10),
     inset 0 -1px 0 rgba(0, 0, 0, 0.55);
 }
-
 .btn-rust::before {
   content: "";
   position: absolute;
@@ -414,24 +341,18 @@ input:focus {
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
   pointer-events: none;
 }
-
-.btn-rust:disabled {
-  opacity: 0.75;
-  cursor: not-allowed;
-  transform: none;
-  filter: none;
-}
+.btn-rust:disabled { opacity: 0.75; cursor: not-allowed; transform: none; filter: none; }
 
 .error {
-  margin-top: 8px;
-  width: 60%;
+  margin-top: 6px;
+  width: min(680px, 70%);
   text-align: center;
   font-size: 14px;
   color: #ffd2a6;
 }
 
 .link-btn {
-  margin-top: 10px;
+  margin-top: 8px;
   background: transparent;
   border: none;
   color: #fde6c3;
@@ -440,7 +361,14 @@ input:focus {
   font-size: 14px;
   text-decoration: underline;
 }
-.link-btn:hover {
-  opacity: 1;
+.link-btn:hover { opacity: 1; }
+
+@media (max-width: 520px) {
+  .fields {
+    grid-template-columns: 1fr;
+    width: 80%;
+  }
+  .full { grid-column: auto; }
+  .btn-rust { width: 70%; }
 }
 </style>
