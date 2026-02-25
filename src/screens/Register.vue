@@ -120,11 +120,7 @@ async function register() {
 
   loading.value = true
   try {
-    const res = await registerRequest({
-      name: name.value,
-      email: email.value,
-      password: password.value,
-    })
+    const res = await registerRequest(name.value, email.value, password.value)
 
     const token = res?.accessToken?.accessToken
     if (token) localStorage.setItem('fz_token', token)
