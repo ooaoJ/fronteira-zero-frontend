@@ -1,3 +1,18 @@
+<script setup>
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function startGame() {
+  router.push('/game')
+}
+
+function logout() {
+  localStorage.removeItem('fz_token')
+  router.push('/login')
+}
+</script>
+
 <template>
   <div class="lobby">
     <div class="topbar"></div>
@@ -10,16 +25,12 @@
 
       <div class="right">
         <h2>Pronto pra uma nova batalha?</h2>
-        <button class="btn" @click="$emit('startGame')">NOVA PARTIDA</button>
-        <button class="btn2" @click="$emit('logout')">SAIR</button>
+        <button class="btn" @click="startGame">NOVA PARTIDA</button>
+        <button class="btn2" @click="logout">SAIR</button>
       </div>
     </div>
   </div>
 </template>
-
-<script setup>
-defineEmits(['startGame', 'logout'])
-</script>
 
 <style scoped>
 .lobby {

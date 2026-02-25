@@ -1,30 +1,53 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 
-import loginTheme from '../assets/audio/login-theme.mp3';
-import clickSfxFile from '../assets/audio/effect/click.wav';
-import keyboardSfxFile from '../assets/audio/effect/keyboard.wav';
+import loginTheme from '../assets/audio/login-theme.mp3'
+import clickSfxFile from '../assets/audio/effect/click.wav'
+import keyboardSfxFile from '../assets/audio/effect/keyboard.wav'
 
-import { loginRequest } from '../services/auth';
+import { loginRequest } from '../services/auth'
 
-const email = ref('');
-const password = ref('');
+/** 🔊 Ícones */
+import soundIcon from '../assets/images/sound.png'
+import soundMutedIcon from '../assets/images/sound-muted.png'
 
-const bgMusic = ref(null);
-const sfxClick = ref(null);
-const sfxKeyboard = ref(null);
+const router = useRouter()
 
-const emit = defineEmits(['login', 'goRegister'])
+const email = ref('')
+const password = ref('')
 
-let audioUnlocked = false;
-const loading = ref(false);
+const bgMusic = ref(null)
+const sfxClick = ref(null)
+const sfxKeyboard = ref(null)
+
+let audioUnlocked = false
+const loading = ref(false)
+
+/** 🔊 Mute */
+const isMuted = ref(false)
+
+function applyMuteToAll() {
+  const muted = isMuted.value
+
+  // Música
+  if (bgMusic.value) bgMusic.value.muted = muted
+
+  // SFX (opcional: mutar todos também)
+  // if (sfxClick.value) sfxClick.value.muted = muted
+  // if (sfxKeyboard.value) sfxKeyboard.value.muted = muted
+}
+
+function toggleSound() {
+  isMuted.value = !isMuted.value
+  applyMuteToAll()
+  localStorage.setItem('fz_muted', isMuted.value ? '1' : '0')
+}
 
 function playMusic() {
   if (!bgMusic.value) return
   bgMusic.value.volume = 0.4
-  bgMusic.value.play().catch(() => {
-    console.log('Autoplay bloqueado até interação do usuário.')
-  })
+  bgMusic.value.play().catch(() => console.log('Autoplay bloqueado até interação do usuário.'))
 }
 
 function unlockAudio() {
@@ -32,7 +55,6 @@ function unlockAudio() {
   audioUnlocked = true
 
   const audios = [sfxClick.value, sfxKeyboard.value].filter(Boolean)
-
   audios.forEach((a) => {
     try {
       a.muted = true
@@ -42,9 +64,13 @@ function unlockAudio() {
           a.pause()
           a.muted = false
           a.currentTime = 0
+
+          // ✅ se o usuário estava mutado, mantém mutado
+          applyMuteToAll()
         })
         .catch(() => {
           a.muted = false
+          applyMuteToAll()
         })
     } catch { }
   })
@@ -57,6 +83,14 @@ function ensureMusic() {
 
 onMounted(async () => {
   await nextTick()
+
+  // ✅ restaura mute salvo
+  const saved = localStorage.getItem('fz_muted')
+  if (saved === '1') {
+    isMuted.value = true
+    applyMuteToAll()
+  }
+
   playMusic()
 })
 
@@ -79,12 +113,7 @@ function playClick() {
 let lastTypeAt = 0
 function onType(e) {
   unlockAudio()
-
-  const ignore = [
-    'Shift', 'Control', 'Alt', 'Meta', 'Tab', 'CapsLock',
-    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-    'Enter', 'Escape'
-  ]
+  const ignore = ['Shift', 'Control', 'Alt', 'Meta', 'Tab', 'CapsLock', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Escape']
   if (ignore.includes(e.key)) return
 
   const now = Date.now()
@@ -114,22 +143,17 @@ async function login() {
 
   try {
     const res = await loginRequest(email.value, password.value)
-
     const token = res?.accessToken?.accessToken
-
-    if (!token) {
-      throw new Error('Token não veio na resposta do backend.')
-    }
+    if (!token) throw new Error('Token não veio na resposta do backend.')
 
     localStorage.setItem('fz_token', token)
 
     if (bgMusic.value) bgMusic.value.pause()
 
-    emit('login')
+    router.push('/loading')
   } catch (err) {
     const status = err?.response?.status
     const backendMsg = err?.response?.data?.message
-
     const msg =
       (Array.isArray(backendMsg) ? backendMsg.join(' / ') : backendMsg) ||
       (status === 401 ? 'Email ou senha inválidos' : 'Erro ao conectar no servidor')
@@ -141,10 +165,14 @@ async function login() {
   }
 }
 
+function goRegister() {
+  playClick()
+  router.push('/register')
+}
+
 function onAudioError(name, e) {
   console.log(`Erro carregando áudio: ${name}`, e)
 }
-
 </script>
 
 <template>
@@ -160,6 +188,11 @@ function onAudioError(name, e) {
     <audio ref="sfxKeyboard" :src="keyboardSfxFile" preload="auto"
       @error="(e) => onAudioError('keyboard.wav', e)"></audio>
 
+    <!-- 🔊 Botão mute (agora com PNGs) -->
+    <button class="sound-btn" type="button" @click="toggleSound" title="Som">
+      <img class="sound-ico" :src="isMuted ? soundMutedIcon : soundIcon" alt="Som" />
+    </button>
+
     <div class="metal-panel">
       <img src="../assets/images/logo.png" alt="Fronteira Zero" class="logo" />
 
@@ -169,14 +202,14 @@ function onAudioError(name, e) {
         <div class="form">
           <div class="fields">
             <input v-model="email" placeholder="Email" @keydown="onType" @pointerdown="playClick" @focus="playClick" />
-            <input v-model="password" type="password" placeholder="Senha" @keydown="onType" @pointerdown="playClick"
+            <input v-model="password" type="password" placeholder="Senha" maxlength="10" @keydown="onType" @pointerdown="playClick"
               @focus="playClick" />
           </div>
 
           <button class="btn-rust" @pointerdown="login">ENTRAR</button>
         </div>
 
-        <button class="link-btn" type="button" @pointerdown="() => { playClick(); emit('goRegister') }">
+        <button class="link-btn" type="button" @pointerdown="goRegister">
           Não possui uma conta? Cadastre-se
         </button>
       </div>
@@ -336,6 +369,7 @@ input:focus {
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
   pointer-events: none;
 }
+
 .link-btn {
   margin-top: 8px;
   background: transparent;
@@ -345,5 +379,44 @@ input:focus {
   cursor: pointer;
   font-size: 14px;
   text-decoration: underline;
+}
+
+/* ✅ botão de som com PNG */
+.sound-btn {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  z-index: 5;
+
+  width: 55px;
+  height: 55px;
+
+  border-radius: 50%;
+  border: 1px solid rgba(250, 230, 185, 0.36);
+  background: rgba(0, 0, 0, 0.55);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.12s ease, opacity 0.12s ease;
+}
+
+.sound-btn:hover {
+  filter: brightness(1.08) contrast(1.05);
+  transform: translateY(-1px);
+}
+
+.sound-btn:active {
+  transform: translateY(1px);
+}
+
+.sound-ico {
+  width: 50px;
+  /* height: 22px; */
+  display: block;
+  user-select: none;
+  pointer-events: none;
 }
 </style>

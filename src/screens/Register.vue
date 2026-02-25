@@ -1,11 +1,14 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 
 import loginTheme from '../assets/audio/login-theme.mp3'
 import clickSfxFile from '../assets/audio/effect/click.wav'
 import keyboardSfxFile from '../assets/audio/effect/keyboard.wav'
 
 import { registerRequest } from '../services/auth'
+
+const router = useRouter()
 
 const name = ref('')
 const email = ref('')
@@ -14,8 +17,6 @@ const password = ref('')
 const bgMusic = ref(null)
 const sfxClick = ref(null)
 const sfxKeyboard = ref(null)
-
-const emit = defineEmits(['registered', 'goLogin'])
 
 let audioUnlocked = false
 const loading = ref(false)
@@ -42,9 +43,7 @@ function unlockAudio() {
           a.muted = false
           a.currentTime = 0
         })
-        .catch(() => {
-          a.muted = false
-        })
+        .catch(() => { a.muted = false })
     } catch {}
   })
 }
@@ -78,7 +77,6 @@ function playClick() {
 let lastTypeAt = 0
 function onType(e) {
   unlockAudio()
-
   const ignore = ['Shift','Control','Alt','Meta','Tab','CapsLock','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','Escape']
   if (ignore.includes(e.key)) return
 
@@ -120,13 +118,14 @@ async function register() {
 
   loading.value = true
   try {
-    const res = await registerRequest(name.value, email.value, password.value)
-
-    const token = res?.accessToken?.accessToken
-    if (token) localStorage.setItem('fz_token', token)
+    await registerRequest(name.value, email.value, password.value)
 
     if (bgMusic.value) bgMusic.value.pause()
-    emit('registered', res)
+
+    // MVP: após registrar, voltar pro login
+    router.push('/login')
+
+    // Se você quiser auto-login (se backend retornar token), aí muda aqui.
   } catch (err) {
     const status = err?.response?.status
     const backendMsg = err?.response?.data?.message
@@ -139,6 +138,11 @@ async function register() {
   } finally {
     loading.value = false
   }
+}
+
+function goLogin() {
+  playClick()
+  router.push('/login')
 }
 
 function onAudioError(name, e) {
@@ -199,7 +203,7 @@ function onAudioError(name, e) {
             {{ loading ? 'CRIANDO...' : 'CRIAR CONTA' }}
           </button>
 
-          <button class="link-btn" type="button" @pointerdown="() => { playClick(); emit('goLogin') }">
+          <button class="link-btn" type="button" @pointerdown="goLogin">
             Já tenho conta — voltar pro login
           </button>
         </div>

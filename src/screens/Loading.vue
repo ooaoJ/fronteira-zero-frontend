@@ -1,22 +1,8 @@
-<template>
-  <div class="loading-bg">
-    <div class="overlay"></div>
-
-    <div class="panel">
-      <p class="title">Carregando...</p>
-      <p class="tip">{{ currentTip }}</p>
-
-      <div class="bar">
-        <div class="fill"></div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
 
-const emit = defineEmits(['done'])
+const router = useRouter()
 
 const tips = [
   'Preparando assentamento, checando rotas, ouvindo o rádio...',
@@ -42,9 +28,8 @@ function pickNextTip() {
 
 onMounted(() => {
   tipTimer = setInterval(pickNextTip, 1400)
-
   doneTimer = setTimeout(() => {
-    emit('done')
+    router.push('/lobby')
   }, 5000)
 })
 
@@ -53,6 +38,20 @@ onBeforeUnmount(() => {
   if (doneTimer) clearTimeout(doneTimer)
 })
 </script>
+<template>
+  <div class="loading-bg">
+    <div class="overlay"></div>
+
+    <div class="panel">
+      <p class="title">Carregando...</p>
+      <p class="tip">{{ currentTip }}</p>
+
+      <div class="bar">
+        <div class="fill"></div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .loading-bg {
