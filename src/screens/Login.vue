@@ -24,7 +24,6 @@ const sfxKeyboard = ref(null)
 let audioUnlocked = false
 const loading = ref(false)
 
-/** 🔊 Mute */
 const isMuted = ref(false)
 
 function applyMuteToAll() {
@@ -64,8 +63,6 @@ function unlockAudio() {
           a.pause()
           a.muted = false
           a.currentTime = 0
-
-          // ✅ se o usuário estava mutado, mantém mutado
           applyMuteToAll()
         })
         .catch(() => {
@@ -84,7 +81,6 @@ function ensureMusic() {
 onMounted(async () => {
   await nextTick()
 
-  // ✅ restaura mute salvo
   const saved = localStorage.getItem('fz_muted')
   if (saved === '1') {
     isMuted.value = true
@@ -179,16 +175,13 @@ function onAudioError(name, e) {
   <div class="login-bg" @pointerdown="ensureMusic">
     <div class="overlay"></div>
 
-    <!-- 🎵 Música -->
     <audio ref="bgMusic" :src="loginTheme" loop preload="auto" @error="(e) => onAudioError('loginTheme', e)"></audio>
 
-    <!-- 🔊 SFX -->
     <audio ref="sfxClick" :src="clickSfxFile" preload="auto" @error="(e) => onAudioError('click.wav', e)"></audio>
 
     <audio ref="sfxKeyboard" :src="keyboardSfxFile" preload="auto"
       @error="(e) => onAudioError('keyboard.wav', e)"></audio>
 
-    <!-- 🔊 Botão mute (agora com PNGs) -->
     <button class="sound-btn" type="button" @click="toggleSound" title="Som">
       <img class="sound-ico" :src="isMuted ? soundMutedIcon : soundIcon" alt="Som" />
     </button>
@@ -381,7 +374,6 @@ input:focus {
   text-decoration: underline;
 }
 
-/* ✅ botão de som com PNG */
 .sound-btn {
   position: absolute;
   bottom: 30px;

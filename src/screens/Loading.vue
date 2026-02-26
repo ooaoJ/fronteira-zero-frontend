@@ -55,7 +55,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .loading-bg {
-  width: 100vw;
+  width: 100%;
   height: 100vh;
 
   background: #0b0f14;
@@ -66,7 +66,7 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-
+  overflow: hidden;
   position: relative;
 }
 
@@ -81,7 +81,7 @@ onBeforeUnmount(() => {
   z-index: 1;
   bottom: 15px;
   left: 10px;
-  width: 100vw;
+  width: 100%;
 
   display: flex;
   flex-direction: column;
