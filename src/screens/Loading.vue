@@ -59,7 +59,7 @@ onBeforeUnmount(() => {
   height: 100vh;
 
   background: #0b0f14;
-  background-image: url('../assets/images/loading.png');
+  background-image: url('../assets/images/backgrounds/loading.png');
   background-size: cover;
   background-position: center;
 

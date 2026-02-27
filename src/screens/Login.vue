@@ -9,8 +9,8 @@ import keyboardSfxFile from '../assets/audio/effect/keyboard.wav'
 import { loginRequest } from '../services/auth'
 
 /** 🔊 Ícones */
-import soundIcon from '../assets/images/sound.png'
-import soundMutedIcon from '../assets/images/sound-muted.png'
+import soundIcon from '../assets/images/icons/sound.png'
+import soundMutedIcon from '../assets/images/icons/sound-muted.png'
 
 const router = useRouter()
 
@@ -32,9 +32,6 @@ function applyMuteToAll() {
   // Música
   if (bgMusic.value) bgMusic.value.muted = muted
 
-  // SFX (opcional: mutar todos também)
-  // if (sfxClick.value) sfxClick.value.muted = muted
-  // if (sfxKeyboard.value) sfxKeyboard.value.muted = muted
 }
 
 function toggleSound() {
@@ -187,7 +184,7 @@ function onAudioError(name, e) {
     </button>
 
     <div class="metal-panel">
-      <img src="../assets/images/logo.png" alt="Fronteira Zero" class="logo" />
+      <img src="../assets/images/icons/logo.png" alt="Fronteira Zero" class="logo" />
 
       <div class="panel-content">
         <p class="message">Sobreviva. Cresça. Faça barulho.</p>
@@ -215,7 +212,7 @@ function onAudioError(name, e) {
   width: 100vw;
   height: 100vh;
 
-  background-image: url('../assets/images/capa.png');
+  background-image: url('../assets/images/backgrounds/capa.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -240,7 +237,7 @@ function onAudioError(name, e) {
   width: min(1080px, 92vw);
   aspect-ratio: 980 / 520;
 
-  background-image: url('../assets/images/login-container.png');
+  background-image: url('../assets/images/utilities/login-container.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;

@@ -1,12 +1,28 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getMe } from '../services/user'
+
+import { getMe } from '../services/profile'
+
+import c1 from '../assets/images/profiles/character1.png'
+import c2 from '../assets/images/profiles/character2.png'
+import c3 from '../assets/images/profiles/character3.png'
+import c4 from '../assets/images/profiles/character4.png'
+import c5 from '../assets/images/profiles/character5.png'
+
+const avatarMap = {
+  1: c1,
+  2: c2,
+  3: c3,
+  4: c4,
+  5: c5,
+}
 
 const playerName = ref('...')
 const playerLvl = ref('...')
 const playerWins = ref('...')
 const playerHordesDefeated = ref('...')
+const playerAvatarId = ref(1)
 const loadingName = ref(true)
 
 const router = useRouter()
@@ -14,22 +30,40 @@ const router = useRouter()
 function startGame() {
   router.push('/game')
 }
- 
+
 function logout() {
   localStorage.removeItem('fz_token')
   router.push('/login')
 }
 
+function goProfile() {
+  router.push('/profile')
+}
+
+function getAvatarSrc(id) {
+  const n = Number(id)
+  return avatarMap[n] ?? c1
+}
+
 onMounted(async () => {
+  loadingName.value = true
   try {
     const me = await getMe()
+
     playerName.value = me?.name ?? 'Sobrevivente'
-    playerLvl.value = me.level
-    playerWins.value = me.wins
-    playerHordesDefeated.value = me.hordesDefeated
+    playerLvl.value = me?.level ?? me?.rank ?? 1
+    playerWins.value = me?.wins ?? 0
+    playerHordesDefeated.value = me?.hordesDefeated ?? 0
+
+    const n = Number(me?.avatarId)
+    playerAvatarId.value = Number.isFinite(n) && n > 0 ? n : 1
   } catch (err) {
-    console.log('Erro buscando perfil:', err)
+    console.log('[Lobby] erro buscando perfil:', err)
     playerName.value = 'Sobrevivente'
+    playerLvl.value = 1
+    playerWins.value = 0
+    playerHordesDefeated.value = 0
+    playerAvatarId.value = 1
   } finally {
     loadingName.value = false
   }
@@ -39,23 +73,52 @@ onMounted(async () => {
 <template>
   <div class="lobby-bg">
     <div class="overlay"></div>
+
     <div class="metal-panel">
       <div class="panel-content">
         <div class="header">
-          <h1 class="title">LOBBY</h1>
-          <p class="subtitle">Sobreviva. Cresça. Faça barulho.</p>
+          <div>
+            <h1 class="title">LOBBY</h1>
+            <p class="subtitle">Sobreviva. Cresça. Faça barulho.</p>
+          </div>
+
+          <div>
+            <button @click="$router.push('/alliances')" aria-label="Ir para alianças">
+              <img src="../assets/images/icons/alianca.png" alt="Aliança" />
+            </button>
+          </div>
         </div>
 
         <div class="grid">
           <section class="card">
             <div class="card-title">
               <div class="profile-image">
-                <img src="../assets/images/profiles/character3.png" alt="" style="width: 125px;">
+                <button
+                  class="profile-btn"
+                  @click="$router.push('/profile')"
+                  aria-label="Editar perfil"
+                  title="Editar perfil"
+                >
+                  <img
+                    class="profile-avatar"
+                    :src="getAvatarSrc(playerAvatarId)"
+                    alt="Perfil"
+                  />
+
+                  <img
+                    class="profile-pencil"
+                    src="../assets/images/icons/pencil.png"
+                    alt=""
+                    aria-hidden="true"
+                  />
+                </button>
               </div>
+
               <h2>
                 Perfil <span class="username">— {{ playerName }}</span>
               </h2>
             </div>
+
             <p class="muted">Seu nível, conquistas, estatísticas e progresso.</p>
 
             <div class="stats">
@@ -63,10 +126,12 @@ onMounted(async () => {
                 <span class="stat-label">Nível</span>
                 <span class="stat-value">{{ playerLvl }}</span>
               </div>
+
               <div class="stat">
                 <span class="stat-label">Vitórias</span>
                 <span class="stat-value">{{ playerWins }}</span>
               </div>
+
               <div class="stat">
                 <span class="stat-label">Hordas derrotadas</span>
                 <span class="stat-value">{{ playerHordesDefeated }}</span>
@@ -78,7 +143,6 @@ onMounted(async () => {
             </div>
           </section>
 
-          <!-- Ações -->
           <section class="card">
             <h2 class="card-title">Pronto pra uma nova batalha?</h2>
             <p class="muted">Crie uma sala ou entre em uma partida e sobreviva ao caos.</p>
@@ -100,11 +164,10 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* Fundo */
 .lobby-bg {
   width: 100vw;
   height: 100vh;
-  background-image: url('../assets/images/lobby.png');
+  background-image: url('../assets/images/backgrounds/lobby.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -123,11 +186,11 @@ onMounted(async () => {
   width: min(1100px, 94vw);
   min-height: 520px;
 
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(250, 230, 185, 0.22);
   box-shadow:
-    0 18px 40px rgba(0,0,0,0.60),
-    inset 0 1px 0 rgba(255,255,255,0.10);
+    0 18px 40px rgba(0, 0, 0, 0.60),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
   backdrop-filter: blur(8px);
 
   padding: 28px;
@@ -142,8 +205,31 @@ onMounted(async () => {
 
 .header {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   gap: 4px;
+}
+.header div button{
+  width: 80px;
+  height: 80px;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100%;
+  transition: scale 0.6s ease;
+  overflow: hidden;
+}
+.header div button img{
+  width: 130px;
+  position: relative;
+  top: 3px;
+  left: 1px;
+}
+.header div button:hover img{
+  transform: scale(1.1);
+  cursor: pointer;
 }
 
 .title {
@@ -169,7 +255,7 @@ onMounted(async () => {
 .card {
   background: rgba(0, 0, 0, 0.55);
   border: 1px solid rgba(250, 230, 185, 0.18);
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
   padding: 18px;
 }
 
@@ -185,7 +271,7 @@ onMounted(async () => {
 
 .muted {
   margin: 0 0 12px;
-  color: rgba(255,255,255,0.78);
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .stats {
@@ -196,8 +282,8 @@ onMounted(async () => {
 }
 
 .stat {
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(0, 0, 0, 0.35);
   padding: 10px 12px;
 }
 
@@ -306,14 +392,14 @@ onMounted(async () => {
 .divider {
   height: 1px;
   margin: 14px 0 10px;
-  background: rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .small {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
   font-size: 13px;
 }
 
@@ -325,7 +411,7 @@ onMounted(async () => {
   box-shadow: 0 0 20px rgb(0, 255, 89);
 }
 
-.profile-image{
+.profile-image {
   width: 120px;
   height: 120px;
   border-radius: 100%;
@@ -343,11 +429,79 @@ onMounted(async () => {
   color: transparent;
 }
 
-/* Responsivo */
+.profile-btn {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-avatar {
+  width: 125px;
+  height: auto;
+  display: block;
+  transition: filter 180ms ease, transform 180ms ease;
+  user-select: none;
+  pointer-events: none;
+}
+
+.profile-pencil {
+  position: absolute;
+  width: 50px;
+  right: calc(50% - 25px);
+  bottom: calc(50% - 25px);
+
+  opacity: 0;
+  transform: translateY(6px) scale(0.96);
+  transition: opacity 180ms ease, transform 180ms ease;
+  user-select: none;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.7));
+}
+
+.profile-btn:hover .profile-avatar {
+  filter: brightness(0.55) contrast(1.05);
+  transform: scale(1.02);
+}
+
+.profile-btn:hover .profile-pencil {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.profile-btn:focus-visible .profile-avatar {
+  filter: brightness(0.55) contrast(1.05);
+}
+
+.profile-btn:focus-visible .profile-pencil {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
 @media (max-width: 900px) {
-  .metal-panel { padding: 16px; }
-  .grid { grid-template-columns: 1fr; }
-  .stats { grid-template-columns: 1fr; }
-  .title { font-size: 28px; }
+  .metal-panel {
+    padding: 16px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .title {
+    font-size: 28px;
+  }
 }
 </style>

@@ -8,6 +8,10 @@ import keyboardSfxFile from '../assets/audio/effect/keyboard.wav'
 
 import { registerRequest } from '../services/auth'
 
+/** 🔊 Ícones */
+import soundIcon from '../assets/images/icons/sound.png'
+import soundMutedIcon from '../assets/images/icons/sound-muted.png'
+
 const router = useRouter()
 
 const name = ref('')
@@ -21,6 +25,26 @@ const sfxKeyboard = ref(null)
 let audioUnlocked = false
 const loading = ref(false)
 const errorMsg = ref('')
+
+/** 🔊 Mute */
+const isMuted = ref(false)
+
+function applyMuteToAll() {
+  const muted = isMuted.value
+
+  // Música
+  if (bgMusic.value) bgMusic.value.muted = muted
+
+  // Se quiser mutar os sfx também, descomenta:
+  // if (sfxClick.value) sfxClick.value.muted = muted
+  // if (sfxKeyboard.value) sfxKeyboard.value.muted = muted
+}
+
+function toggleSound() {
+  isMuted.value = !isMuted.value
+  applyMuteToAll()
+  localStorage.setItem('fz_muted', isMuted.value ? '1' : '0')
+}
 
 function playMusic() {
   if (!bgMusic.value) return
@@ -42,8 +66,12 @@ function unlockAudio() {
           a.pause()
           a.muted = false
           a.currentTime = 0
+          applyMuteToAll()
         })
-        .catch(() => { a.muted = false })
+        .catch(() => {
+          a.muted = false
+          applyMuteToAll()
+        })
     } catch {}
   })
 }
@@ -55,6 +83,14 @@ function ensureMusic() {
 
 onMounted(async () => {
   await nextTick()
+
+  // ✅ lê o mute salvo (mesma chave do login)
+  const saved = localStorage.getItem('fz_muted')
+  if (saved === '1') {
+    isMuted.value = true
+    applyMuteToAll()
+  }
+
   playMusic()
 })
 
@@ -122,10 +158,7 @@ async function register() {
 
     if (bgMusic.value) bgMusic.value.pause()
 
-    // MVP: após registrar, voltar pro login
     router.push('/login')
-
-    // Se você quiser auto-login (se backend retornar token), aí muda aqui.
   } catch (err) {
     const status = err?.response?.status
     const backendMsg = err?.response?.data?.message
@@ -158,8 +191,13 @@ function onAudioError(name, e) {
     <audio ref="sfxClick" :src="clickSfxFile" preload="auto" @error="(e) => onAudioError('click.wav', e)"></audio>
     <audio ref="sfxKeyboard" :src="keyboardSfxFile" preload="auto" @error="(e) => onAudioError('keyboard.wav', e)"></audio>
 
+    <!-- ✅ Botão de som igual ao login -->
+    <button class="sound-btn" type="button" @click="toggleSound" title="Som">
+      <img class="sound-ico" :src="isMuted ? soundMutedIcon : soundIcon" alt="Som" />
+    </button>
+
     <div class="metal-panel">
-      <img src="../assets/images/logo.png" alt="Fronteira Zero" class="logo" />
+      <img src="../assets/images/icons/logo.png" alt="Fronteira Zero" class="logo" />
 
       <div class="panel-content">
         <p class="message">Crie sua conta e entre na fronteira.</p>
@@ -216,7 +254,7 @@ function onAudioError(name, e) {
 .login-bg {
   width: 100vw;
   height: 100vh;
-  background-image: url('../assets/images/capa.png');
+  background-image: url('../assets/images/backgrounds/capa.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -237,7 +275,7 @@ function onAudioError(name, e) {
   z-index: 2;
   width: min(1080px, 92vw);
   aspect-ratio: 980 / 520;
-  background-image: url('../assets/images/login-container.png');
+  background-image: url('../assets/images/utilities/login-container.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -362,6 +400,40 @@ input:focus { border-color: #c46a22; }
   text-decoration: underline;
 }
 .link-btn:hover { opacity: 1; }
+
+/* ✅ CSS do botão de som (copiado do login) */
+.sound-btn {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  z-index: 5;
+
+  width: 55px;
+  height: 55px;
+
+  border-radius: 50%;
+  border: 1px solid rgba(250, 230, 185, 0.36);
+  background: rgba(0, 0, 0, 0.55);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.12s ease, opacity 0.12s ease;
+}
+.sound-btn:hover {
+  filter: brightness(1.08) contrast(1.05);
+  transform: translateY(-1px);
+}
+.sound-btn:active { transform: translateY(1px); }
+
+.sound-ico {
+  width: 50px;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
 
 @media (max-width: 520px) {
   .fields {
