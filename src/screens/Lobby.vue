@@ -220,6 +220,7 @@ onMounted(async () => {
   border-radius: 100%;
   transition: scale 0.6s ease;
   overflow: hidden;
+  border: none;
 }
 .header div button img{
   width: 130px;
@@ -408,7 +409,13 @@ onMounted(async () => {
   height: 8px;
   border-radius: 50%;
   background: #3bd16f;
-  box-shadow: 0 0 20px rgb(0, 255, 89);
+
+  box-shadow:
+    0 0 6px rgba(59, 209, 111, 0.9),
+    0 0 14px rgba(59, 209, 111, 0.55);
+
+  animation: dotPulse 1.8s ease-in-out infinite;
+  transform-origin: center;
 }
 
 .profile-image {
@@ -502,6 +509,33 @@ onMounted(async () => {
 
   .title {
     font-size: 28px;
+  }
+}
+
+@keyframes dotPulse {
+  0% {
+    transform: scale(1);
+    box-shadow:
+      0 0 6px rgba(59, 209, 111, 0.9),
+      0 0 14px rgba(59, 209, 111, 0.55);
+    opacity: 0.85;
+  }
+
+  50% {
+    transform: scale(1.55);
+    box-shadow:
+      0 0 10px rgba(59, 209, 111, 1),
+      0 0 26px rgba(59, 209, 111, 0.7),
+      0 0 48px rgba(59, 209, 111, 0.35);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 6px rgba(59, 209, 111, 0.9),
+      0 0 14px rgba(59, 209, 111, 0.55);
+    opacity: 0.85;
   }
 }
 </style>
