@@ -92,6 +92,8 @@ function connectChat() {
   })
 
   socket.value.on('alliance:members_updated', (payload) => {
+    console.log('members_updated payload:', payload)
+    console.log('first member:', payload?.members?.[0])
     if (!my.value) return
     if (my.value.alliance) my.value.alliance.membersCount = payload.membersCount
     my.value.members = payload.members
@@ -179,7 +181,7 @@ function onKeydown(e) {
 
 function getAvatarSrc(id) {
   const n = Number(id)
-  return avatarMap[n] ?? c1
+  return avatarMap[n]
 }
 
 function formatTime(createdAt) {

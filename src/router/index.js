@@ -7,6 +7,7 @@ import Lobby from '../screens/Lobby.vue'
 import Game from '../screens/Game.vue'
 import Alliances from '../screens/Alliances.vue'
 import ProfileView from '../screens/ProfileView.vue'
+import Rooms from '../screens/Rooms.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -23,6 +24,8 @@ const router = createRouter({
     { path: '/alliances', name: 'alliances', component: Alliances, meta: { requiresAuth: true } },
     
     { path: '/profile', name: 'profile', component: ProfileView, meta: { requiresAuth: true } },
+
+    { path: '/matches', name: 'matches', component: Rooms, meta: { requiresAuth: true }},
   ],
 })
 

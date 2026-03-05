@@ -28,7 +28,7 @@ const loadingName = ref(true)
 const router = useRouter()
 
 function startGame() {
-  router.push('/game')
+  router.push('/matches')
 }
 
 function logout() {
@@ -42,7 +42,7 @@ function goProfile() {
 
 function getAvatarSrc(id) {
   const n = Number(id)
-  return avatarMap[n] ?? c1
+  return avatarMap[n]
 }
 
 onMounted(async () => {
@@ -93,24 +93,11 @@ onMounted(async () => {
           <section class="card">
             <div class="card-title">
               <div class="profile-image">
-                <button
-                  class="profile-btn"
-                  @click="$router.push('/profile')"
-                  aria-label="Editar perfil"
-                  title="Editar perfil"
-                >
-                  <img
-                    class="profile-avatar"
-                    :src="getAvatarSrc(playerAvatarId)"
-                    alt="Perfil"
-                  />
+                <button class="profile-btn" @click="$router.push('/profile')" aria-label="Editar perfil"
+                  title="Editar perfil">
+                  <img class="profile-avatar" :src="getAvatarSrc(playerAvatarId)" alt="Perfil" />
 
-                  <img
-                    class="profile-pencil"
-                    src="../assets/images/icons/pencil.png"
-                    alt=""
-                    aria-hidden="true"
-                  />
+                  <img class="profile-pencil" src="../assets/images/icons/pencil.png" alt="" aria-hidden="true" />
                 </button>
               </div>
 
@@ -145,9 +132,9 @@ onMounted(async () => {
 
           <section class="card">
             <h2 class="card-title">Pronto pra uma nova batalha?</h2>
-            <p class="muted">Crie uma sala ou entre em uma partida e sobreviva ao caos.</p>
+            <p class="muted">Entre em uma partida e sobreviva ao caos.</p>
 
-            <button class="btn-rust" @pointerdown="startGame">NOVA PARTIDA</button>
+            <button class="btn-rust" @pointerdown="startGame">JOGAR</button>
             <button class="btn-ghost" @pointerdown="logout">SAIR</button>
 
             <div class="divider"></div>
@@ -210,7 +197,8 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 4px;
 }
-.header div button{
+
+.header div button {
   width: 80px;
   height: 80px;
   background-color: transparent;
@@ -222,13 +210,15 @@ onMounted(async () => {
   overflow: hidden;
   border: none;
 }
-.header div button img{
+
+.header div button img {
   width: 130px;
   position: relative;
   top: 3px;
   left: 1px;
 }
-.header div button:hover img{
+
+.header div button:hover img {
   transform: scale(1.1);
   cursor: pointer;
 }
@@ -472,7 +462,7 @@ onMounted(async () => {
   transition: opacity 180ms ease, transform 180ms ease;
   user-select: none;
   pointer-events: none;
-  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.7));
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.7));
 }
 
 .profile-btn:hover .profile-avatar {
